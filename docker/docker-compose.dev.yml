@@ -1,0 +1,73 @@
+services:
+  db:
+    image: postgres:18.1
+    container_name: scanner_db
+    environment:
+      POSTGRES_USER: scanner
+      POSTGRES_PASSWORD: dev_password
+      POSTGRES_DB: scanner
+    volumes:
+      - ./postgres_data:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    networks:
+      - scanner_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U scanner"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+  
+  redis:
+    image: redis:8.2.3-alpine
+    container_name: scanner_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - scanner_network
+    volumes:
+      - ./redis_data:/data
+    command: redis-server --appendonly yes --dir /data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  scanner:
+    build:
+      context: ../apps/scanner
+      dockerfile: Dockerfile.dev
+    user: "${UID:-1000}:${GID:-1000}"
+    container_name: scanner_api
+    ports:
+      - "8000:8000"
+    environment:
+      - REDIS_URL=redis://redis:6379
+      - ALLOWED_ORIGINS=http://localhost:3000
+      - PYTHONUNBUFFERED=1
+    volumes:
+      - ../apps/scanner:/app
+      - /app/__pycache__
+    networks:
+      - scanner_network
+    depends_on:
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+    cap_add:
+      - NET_RAW
+      - NET_ADMIN
+    restart: unless-stopped
+
+networks:
+  scanner_network:
+    driver: bridge
+    name: scanner_network
+
+volumes:
+  postgres_data:
+    name: scanner_postgres_data
+  redis_data:
+    name: scanner_redis_data

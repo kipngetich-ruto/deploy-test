@@ -1,0 +1,8 @@
+/docker/postgres_data
+/docker/redis_data
+structure.md
+
+apps/web/node_modules
+apps/web/.next
+
+node_modules
