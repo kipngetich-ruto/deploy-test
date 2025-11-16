@@ -2,10 +2,7 @@
   "name": "cyber-scanner-monorepo",
   "version": "1.0.0",
   "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "type": "module",
   "scripts": {
     "docker:up": "docker compose -f docker/docker-compose.dev.yml up -d",
     "docker:down": "docker compose -f docker/docker-compose.dev.yml down",
@@ -14,19 +11,19 @@
     "docker:build": "docker compose -f docker/docker-compose.dev.yml up -d --build",
     "docker:ps": "docker compose -f docker/docker-compose.dev.yml ps",
     "setup": "bash docker/rootless-setup.sh",
-    "web:dev": "cd apps/web && npm run dev",
-    "web:build": "cd apps/web && npm run build",
-    "web:install": "cd apps/web && npm install",
-    "db:generate": "cd apps/web && npm run db:generate",
-    "db:push": "cd apps/web && npm run db:push",
-    "db:migrate": "cd apps/web && npm run db:migrate",
-    "db:studio": "cd apps/web && npm run db:studio",
-    "lint": "cd apps/web && npm run lint",
-    "lint:fix": "cd apps/web && npm run lint:fix",
-    "format": "cd apps/web && npm run format",
+    "web:dev": "pnpm --filter web dev",
+    "web:build": "pnpm --filter web build",
+    "web:start": "pnpm --filter web start",
+    "web:lint": "pnpm --filter web lint",
+    "web:lint:fix": "pnpm --filter web lint:fix",
+    "web:format": "pnpm --filter web format",
+    "db:generate": "pnpm --filter web db:generate",
+    "db:push": "pnpm --filter web db:push",
+    "db:migrate": "pnpm --filter web db:migrate",
+    "db:studio": "pnpm --filter web db:studio",
     "dev": "npm run docker:up && npm run web:dev",
     "check:scanner": "curl -f http://localhost:8000/health || echo 'Scanner not ready'",
-    "check:db": "docker exec scanner_db pg_isready -U scanner || echo 'Database not ready'",
+    "check:db": "docker exec scanner_db_dev pg_isready -U scanner || echo 'Database not ready'",
     "check:all": "npm run check:db && npm run check:scanner"
   }
 }

@@ -1,7 +1,10 @@
 fastapi
 uvicorn[standard]
+gunicorn
 python-nmap
 redis
 pydantic
 python-dotenv
 httpx
+asyncio
+psycopg2-binary
